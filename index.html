@@ -103,6 +103,16 @@ textarea{resize:none}input[type=date]{color-scheme:dark}
 .cat-item{margin-bottom:13px}.cat-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}.cat-name{font-weight:600}
 .cat-track{height:7px;background:var(--surface2);border-radius:99px;overflow:hidden}.cat-fill{height:100%;border-radius:99px;transition:width .6s ease}
 /* BALANCES */
+/* BALANCE OVERVIEW — TOTALS */
+.bal-totals-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.bal-total-card{border-radius:var(--r);padding:16px 14px;border:1px solid var(--border)}
+.bal-total-card.cash{background:linear-gradient(135deg,rgba(0,208,132,0.07),rgba(0,208,132,0.02));border-color:rgba(0,208,132,0.25)}
+.bal-total-card.bank{background:linear-gradient(135deg,rgba(26,127,232,0.09),rgba(26,127,232,0.02));border-color:rgba(26,127,232,0.25)}
+.btc-label{font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.5px;color:var(--text2);margin-bottom:7px}
+.btc-amount{font-size:22px;font-weight:800;letter-spacing:-1px;line-height:1}
+.bal-total-card.cash .btc-amount{color:var(--income)}
+.bal-total-card.bank .btc-amount{color:var(--blue-light)}
+.btc-sub{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-top:5px}
 .bal-user-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}
 .bal-user-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
 .bal-user-name{font-size:14px;font-weight:700}.bal-user-total{font-size:16px;font-weight:800}
@@ -161,6 +171,20 @@ textarea{resize:none}input[type=date]{color-scheme:dark}
 .rb.shared{background:var(--blue-dim);color:var(--blue-light);border:1px solid rgba(26,127,232,.3)}
 .rb.personal{background:rgba(245,166,35,.1);color:var(--warn);border:1px solid rgba(245,166,35,.2)}
 .bflex{display:flex;gap:8px}
+/* BANK ACCESS MATRIX */
+.acl-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}.acl-row:last-child{border-bottom:none}
+.acl-uname{flex:1;font-size:13px;font-weight:600}
+.acl-uinfo{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-top:1px}
+.acl-toggles{display:flex;gap:8px;flex-shrink:0}
+.acl-toggle{display:flex;flex-direction:column;align-items:center;gap:4px}
+.acl-toggle-lbl{font-size:9px;font-family:'JetBrains Mono',monospace;letter-spacing:.5px;font-weight:700}
+.acl-toggle-lbl.r{color:var(--income)}.acl-toggle-lbl.p{color:var(--expense)}
+.tog{width:46px;height:26px;border-radius:99px;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.tog::after{content:'';position:absolute;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.tog.on{background:var(--income)}.tog.on::after{left:23px}
+.tog.off{background:var(--surface3)}.tog.off::after{left:3px}
+.tog.pay-on{background:var(--expense)}.tog.pay-on::after{left:23px}
+.acl-default-tag{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);padding:2px 6px;border-radius:99px;background:var(--surface2);border:1px solid var(--border)}
 /* MODAL */
 .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:200;align-items:flex-end}
 .mo.open{display:flex}.mo-box{background:var(--surface);border-radius:var(--r) var(--r) 0 0;padding:22px;width:100%;max-height:88vh;overflow-y:auto;animation:slideUp .25s cubic-bezier(.4,0,.2,1)}
@@ -252,7 +276,33 @@ textarea{resize:none}input[type=date]{color-scheme:dark}
         <div class="pt" onclick="setPeriod('month',this)">Month</div>
         <div class="pt" onclick="setPeriod('year',this)">Year</div>
       </div>
-      <div id="d-balances-section"></div>
+      <!-- BALANCE OVERVIEW -->
+      <div id="d-bal-totals" style="display:none">
+        <!-- Total Cash + Total Bank hero pair -->
+        <div class="bal-totals-row">
+          <div class="bal-total-card cash">
+            <div class="btc-label">💵 TOTAL CASH</div>
+            <div class="btc-amount" id="d-total-cash">₹0</div>
+            <div class="btc-sub">All users combined</div>
+          </div>
+          <div class="bal-total-card bank">
+            <div class="btc-label">🏦 TOTAL BANK</div>
+            <div class="btc-amount" id="d-total-bank">₹0</div>
+            <div class="btc-sub">All accounts combined</div>
+          </div>
+        </div>
+        <!-- Bank accounts standalone -->
+        <div class="sec-hdr mt8 mb8"><div class="sec-title">BANK ACCOUNTS</div></div>
+        <div id="d-bank-list" class="card" style="padding:8px 16px"></div>
+        <!-- User cash balances -->
+        <div class="sec-hdr mt8 mb8"><div class="sec-title">USER CASH BALANCES</div></div>
+        <div id="d-user-cash-list" class="card" style="padding:8px 16px"></div>
+      </div>
+      <!-- Non-admin: own balances -->
+      <div id="d-my-bal" style="display:none">
+        <div class="sec-hdr mb8"><div class="sec-title">MY BALANCES</div></div>
+        <div id="d-my-bal-rows" class="card" style="padding:8px 16px"></div>
+      </div>
       <div class="stat-grid">
         <div class="stat-card"><div class="s-icon">🔢</div><div class="s-label">TRANSACTIONS</div><div class="s-val" id="d-count">0</div></div>
         <div class="stat-card"><div class="s-icon">💹</div><div class="s-label">SAVINGS RATE</div><div class="s-val" id="d-savings">0%</div></div>
@@ -351,6 +401,17 @@ textarea{resize:none}input[type=date]{color-scheme:dark}
         <div id="adm-banks"><div class="empty"><div class="empty-ico">🏦</div><div class="empty-txt">No banks yet</div></div></div>
         <button class="btn btn-secondary mt12" onclick="openModal('mo-addbank')">＋ Add Bank</button>
       </div>
+
+      <div class="adm-card">
+        <h3>🔐 Bank Access Rights</h3>
+        <div class="adm-sub">Set per-user <span style="color:var(--income);font-weight:700">Receive</span> (accept income) and <span style="color:var(--expense);font-weight:700">Pay</span> (make payments) rights for each bank. Shared banks are fully open by default; personal banks are owner-only by default.</div>
+        <div class="fg">
+          <label class="fl">SELECT BANK</label>
+          <div class="sel-wrap"><select id="acl-bank-sel" onchange="renderAccessMatrix()"><option value="">— Select bank to manage —</option></select></div>
+        </div>
+        <div id="acl-matrix"></div>
+      </div>
+
       <div class="adm-card">
         <h3>💰 Opening Balances</h3>
         <div class="adm-sub">Set the starting balance for each user (cash) and each bank account as of a specific date.</div>
@@ -489,7 +550,7 @@ textarea{resize:none}input[type=date]{color-scheme:dark}
 <div class="toast" id="toast"></div>
 <script>
 const CFG_KEY='cf_cfg',SESS_KEY='cf_sess',CUR='₹';
-const S={url:'',session:null,txns:[],transfers:[],cats:{},users:[],banks:[],balances:[],openingBals:[],period:'month',filter:'all',entryType:'income',payMode:'cash',trType:'cash_to_user'};
+const S={url:'',session:null,txns:[],transfers:[],cats:{},users:[],banks:[],balances:[],openingBals:[],bankAccess:[],period:'month',filter:'all',entryType:'income',payMode:'cash',trType:'cash_to_user'};
 
 // ── BOOT ──
 window.onload=()=>{
@@ -580,7 +641,7 @@ async function bootApp(){
   document.getElementById('profile-info').textContent=s.userName+' · '+s.role.toUpperCase();
   document.getElementById('tb-sub').textContent=(new Date().getHours()<12?'Good morning':new Date().getHours()<17?'Good afternoon':'Good evening')+', '+s.userName;
   ['e-date','tr-date','ob-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=todayStr();});
-  await Promise.all([fetchCategories(),fetchBanks(),fetchTransactions(),fetchTransfers(),fetchBalances(),fetchUsers()]);
+  await Promise.all([fetchCategories(),fetchBanks(),fetchTransactions(),fetchTransfers(),fetchBalances(),fetchUsers(),fetchBankAccess()]);
   renderDash();if(isAdmin)refreshAdmin();
 }
 
@@ -591,6 +652,17 @@ async function fetchTransactions(){try{const r=await api('getTransactions');S.tx
 async function fetchTransfers(){try{const r=await api('getTransfers');S.transfers=r.transfers||[];}catch(e){console.error(e);}}
 async function fetchBalances(){try{const r=await api('getBalances');S.balances=r.balances||[];renderBalances();renderProfileBal();}catch(e){console.error(e);}}
 async function fetchOpeningBals(){try{const r=await api('getOpeningBals');S.openingBals=r.openingBals||[];renderOpeningBals();}catch(e){console.error(e);}}
+async function fetchBankAccess(){
+  try{
+    const r=await api('getBankAccess');
+    S.bankAccess = Array.isArray(r.bankAccess) ? r.bankAccess : [];
+    // For non-admins, server returns a plain object {bankId: {canReceive,canPay}}
+    // Convert to array format for uniform handling
+    if(!Array.isArray(r.bankAccess) && typeof r.bankAccess==='object') {
+      S.bankAccess = Object.entries(r.bankAccess).map(([bankId,rights])=>({bankId,userId:S.session.userId,canReceive:rights.canReceive,canPay:rights.canPay,isDefault:false}));
+    }
+  }catch(e){console.error('bankAccess',e);}
+}
 
 // ── POPULATE SELECTS ──
 function populateCatSelects(){
@@ -603,12 +675,46 @@ function refillMajor(id,entries){
   sel.innerHTML='<option value="">Select major category</option>'+entries.map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('');
 }
 function populateBankSelects(){
-  const opts=S.banks.map(b=>`<option value="${b.id}">${b.name}${b.accountNo?' ('+b.accountNo+')':''}${b.scope==='personal'?' 👤':''}</option>`).join('');
-  const withE='<option value="">Select bank</option>'+opts;
-  ['e-bank','tr-to-bank','tr-from-bank'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=withE;});
-  const obEl=document.getElementById('ob-bank');if(obEl)obEl.innerHTML='<option value="">Cash in hand</option>'+opts;
+  // Banks already have canReceive/canPay from server (filtered per user)
+  const receiveBanks = S.banks.filter(b=>b.canReceive);
+  const payBanks     = S.banks.filter(b=>b.canPay);
+  const allBanks     = S.banks;
+
+  // Entry form — filtered by type
+  // Will be re-populated when payMode + entryType are set (see setPayModeBankList)
+  setPayModeBankList();
+
+  // Transfer selects (fromBank = pay, toBank = receive)
+  const payOpts = '<option value="">Select bank</option>'+payBanks.map(b=>`<option value="${b.id}">${b.name}${b.accountNo?' ('+b.accountNo+')':''}</option>`).join('');
+  const rcvOpts = '<option value="">Select bank</option>'+receiveBanks.map(b=>`<option value="${b.id}">${b.name}${b.accountNo?' ('+b.accountNo+')':''}</option>`).join('');
+  const el_fb=document.getElementById('tr-from-bank');if(el_fb)el_fb.innerHTML=payOpts;
+  const el_tb=document.getElementById('tr-to-bank');if(el_tb)el_tb.innerHTML=rcvOpts;
+
+  // Opening balance bank select (admin — all banks)
+  const obEl=document.getElementById('ob-bank');
+  if(obEl)obEl.innerHTML='<option value="">Cash in hand</option>'+allBanks.map(b=>`<option value="${b.id}">${b.name}${b.accountNo?' ('+b.accountNo+')':''}</option>`).join('');
+
+  // Bank access matrix bank selector (admin)
+  const aclSel=document.getElementById('acl-bank-sel');
+  if(aclSel){aclSel.innerHTML='<option value="">— Select bank to manage —</option>'+allBanks.map(b=>`<option value="${b.id}">${b.name}${b.accountNo?' ('+b.accountNo+')':''} — ${b.scope.toUpperCase()}</option>`).join('');}
+
+  // Add bank owner select
   const nbEl=document.getElementById('nb-owner');
   if(nbEl)nbEl.innerHTML='<option value="">Select owner</option>'+S.users.map(u=>`<option value="${u.id}">${u.name}</option>`).join('');
+}
+
+function setPayModeBankList(){
+  // Populate entry form bank dropdown based on current entryType + payMode
+  const filtered = S.entryType==='income'
+    ? S.banks.filter(b=>b.canReceive)
+    : S.banks.filter(b=>b.canPay);
+  const el=document.getElementById('e-bank');
+  if(!el)return;
+  if(!filtered.length){
+    el.innerHTML='<option value="">No banks available for this action</option>';
+    return;
+  }
+  el.innerHTML='<option value="">Select bank account</option>'+filtered.map(b=>`<option value="${b.id}">${b.name}${b.accountNo?' ('+b.accountNo+')':''}</option>`).join('');
 }
 function populateTrUserSel(){
   const sel=document.getElementById('tr-to-user');if(!sel)return;
@@ -654,6 +760,7 @@ function setType(t){
   document.getElementById('btn-exp').className='tt-btn'+(t==='expense'?' active exp':'');
   refillMajor('e-major',Object.entries(S.cats).filter(([,v])=>v.type===t));
   document.getElementById('e-minor').innerHTML='<option value="">Select minor category</option>';
+  setPayModeBankList(); // refresh bank dropdown based on income/expense rights
 }
 function setPayMode(m){
   S.payMode=m;
@@ -731,35 +838,101 @@ async function saveTransfer(){
 
 // ── BALANCE RENDERING ──
 function renderBalances(){
-  const el=document.getElementById('d-balances-section');
-  if(!S.balances.length){el.innerHTML='';return;}
-  const isAdmin=S.session?.role==='admin';
+  if(!S.balances.length) return;
+  const isAdmin = S.session?.role==='admin';
+
   if(isAdmin){
-    el.innerHTML='<div class="sec-hdr" style="margin-bottom:10px"><div class="sec-title">ALL USER BALANCES</div></div>'+S.balances.map(ub=>userBalCard(ub)).join('');
-  }else{
-    const ub=S.balances.find(b=>b.userId===S.session.userId);
-    if(!ub){el.innerHTML='';return;}
-    el.innerHTML='<div class="sec-hdr" style="margin-bottom:10px"><div class="sec-title">MY BALANCES</div></div>'+myBalRows(ub);
+    // ── ADMIN VIEW ──
+    document.getElementById('d-bal-totals').style.display='block';
+    document.getElementById('d-my-bal').style.display='none';
+
+    // 1. Compute total cash across all users
+    const totalCash = S.balances.reduce((s,ub)=>s+ub.cashBalance,0);
+
+    // 2. Compute each bank's total balance (sum across all users who have that bank)
+    //    Each bank appears once — aggregate contributions from all users
+    const bankMap = {}; // bankId → {name, accountNo, scope, total}
+    S.balances.forEach(ub=>{
+      ub.bankBals.forEach(b=>{
+        if(!bankMap[b.bankId]) bankMap[b.bankId]={name:b.bankName,accountNo:b.accountNo,scope:b.scope,total:0};
+        bankMap[b.bankId].total += b.balance;
+      });
+    });
+    const totalBank = Object.values(bankMap).reduce((s,b)=>s+b.total,0);
+
+    // 3. Render totals hero
+    document.getElementById('d-total-cash').textContent = fmtFull(totalCash);
+    document.getElementById('d-total-bank').textContent = fmtFull(totalBank);
+
+    // 4. Render each bank row
+    const bankEl = document.getElementById('d-bank-list');
+    const bankEntries = Object.entries(bankMap);
+    if(!bankEntries.length){
+      bankEl.innerHTML='<div class="empty"><div class="empty-ico">🏦</div><div class="empty-txt">No bank accounts</div></div>';
+    } else {
+      bankEl.innerHTML = bankEntries.map(([bid,b])=>{
+        const cls = b.total>=0?'inc-c':'exp-c';
+        const scopeTag = b.scope==='personal'
+          ? '<span style="font-size:9px;font-family:\'JetBrains Mono\',monospace;background:rgba(245,166,35,0.1);color:var(--warn);padding:1px 5px;border-radius:99px;margin-left:5px">PERSONAL</span>'
+          : '<span style="font-size:9px;font-family:\'JetBrains Mono\',monospace;background:var(--blue-dim);color:var(--blue-light);padding:1px 5px;border-radius:99px;margin-left:5px">SHARED</span>';
+        return`<div class="bal-row">
+          <div class="bal-row-left">
+            <span class="bal-row-icon">🏦</span>
+            <div>
+              <div class="bal-row-label">${b.name}${b.accountNo?' · '+b.accountNo:''}${scopeTag}</div>
+            </div>
+          </div>
+          <div class="bal-row-amt ${cls}">${fmtFull(b.total)}</div>
+        </div>`;
+      }).join('');
+    }
+
+    // 5. Render user cash balances
+    const userEl = document.getElementById('d-user-cash-list');
+    userEl.innerHTML = S.balances.map(ub=>{
+      const cls = ub.cashBalance>=0?'inc-c':'exp-c';
+      return`<div class="bal-row">
+        <div class="bal-row-left">
+          <div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#0d4a8c,var(--blue));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0">${ub.userName[0].toUpperCase()}</div>
+          <div><div class="bal-row-label">${ub.userName}</div><div class="bal-row-sub">Cash in hand</div></div>
+        </div>
+        <div class="bal-row-amt ${cls}">${fmtFull(ub.cashBalance)}</div>
+      </div>`;
+    }).join('');
+
+  } else {
+    // ── NON-ADMIN VIEW — own cash + own banks ──
+    document.getElementById('d-bal-totals').style.display='none';
+    document.getElementById('d-my-bal').style.display='block';
+    const ub = S.balances.find(b=>b.userId===S.session.userId);
+    if(!ub){ document.getElementById('d-my-bal-rows').innerHTML=''; return; }
+
+    let h = `<div class="bal-row">
+      <div class="bal-row-left"><span class="bal-row-icon">💵</span>
+        <div><div class="bal-row-label">Cash in hand</div></div>
+      </div>
+      <div class="bal-row-amt ${ub.cashBalance>=0?'inc-c':'exp-c'}">${fmtFull(ub.cashBalance)}</div>
+    </div>`;
+    ub.bankBals.forEach(b=>{
+      h+=`<div class="bal-row">
+        <div class="bal-row-left"><span class="bal-row-icon">🏦</span>
+          <div><div class="bal-row-label">${b.bankName}${b.accountNo?' · '+b.accountNo:''}</div>
+          <div class="bal-row-sub">${b.scope==='personal'?'Personal':'Shared'}</div></div>
+        </div>
+        <div class="bal-row-amt ${b.balance>=0?'inc-c':'exp-c'}">${fmtFull(b.balance)}</div>
+      </div>`;
+    });
+    document.getElementById('d-my-bal-rows').innerHTML=h;
   }
 }
-function userBalCard(ub){
-  const tc=ub.totalBalance>=0?'inc-c':'exp-c';
-  return`<div class="bal-user-card">
-    <div class="bal-user-hdr"><div class="bal-user-name">👤 ${ub.userName}</div><div class="bal-user-total ${tc}">${ub.totalBalance>=0?'':'-'}${fmtFull(ub.totalBalance)}</div></div>
-    <div class="bal-row"><div class="bal-row-left"><span class="bal-row-icon">💵</span><div><div class="bal-row-label">Cash in hand</div></div></div><div class="bal-row-amt ${ub.cashBalance>=0?'inc-c':'exp-c'}">${fmtFull(ub.cashBalance)}</div></div>
-    ${ub.bankBals.map(b=>`<div class="bal-row"><div class="bal-row-left"><span class="bal-row-icon">🏦</span><div><div class="bal-row-label">${b.bankName}${b.accountNo?' · '+b.accountNo:''}</div><div class="bal-row-sub">${b.scope==='personal'?'Personal':'Shared'}</div></div></div><div class="bal-row-amt ${b.balance>=0?'inc-c':'exp-c'}">${fmtFull(b.balance)}</div></div>`).join('')}
-  </div>`;
-}
-function myBalRows(ub){
-  let h=`<div class="bal-row"><div class="bal-row-left"><span class="bal-row-icon">💵</span><div><div class="bal-row-label">Cash in hand</div></div></div><div class="bal-row-amt ${ub.cashBalance>=0?'inc-c':'exp-c'}">${fmtFull(ub.cashBalance)}</div></div>`;
-  ub.bankBals.forEach(b=>{h+=`<div class="bal-row"><div class="bal-row-left"><span class="bal-row-icon">🏦</span><div><div class="bal-row-label">${b.bankName}${b.accountNo?' · '+b.accountNo:''}</div><div class="bal-row-sub">${b.scope==='personal'?'Personal bank':'Shared bank'}</div></div></div><div class="bal-row-amt ${b.balance>=0?'inc-c':'exp-c'}">${fmtFull(b.balance)}</div></div>`;});
-  return`<div class="bal-user-card">${h}</div>`;
-}
+
 function renderProfileBal(){
   const el=document.getElementById('profile-bal');if(!el)return;
   const ub=S.balances.find(b=>b.userId===S.session?.userId);
   if(!ub){el.innerHTML='<div class="empty"><div class="empty-ico">💰</div><div class="empty-txt">Loading balances...</div></div>';return;}
-  el.innerHTML=myBalRows(ub);
+  let h=`<div class="bal-row"><div class="bal-row-left"><span class="bal-row-icon">💵</span><div><div class="bal-row-label">Cash in hand</div></div></div><div class="bal-row-amt ${ub.cashBalance>=0?'inc-c':'exp-c'}">${fmtFull(ub.cashBalance)}</div></div>`;
+  ub.bankBals.forEach(b=>{h+=`<div class="bal-row"><div class="bal-row-left"><span class="bal-row-icon">🏦</span><div><div class="bal-row-label">${b.bankName}${b.accountNo?' · '+b.accountNo:''}</div><div class="bal-row-sub">${b.scope==='personal'?'Personal':'Shared'}</div></div></div><div class="bal-row-amt ${b.balance>=0?'inc-c':'exp-c'}">${fmtFull(b.balance)}</div></div>`;});
+  el.innerHTML=`<div style="padding:4px 0">${h}</div>`;
 }
 
 // ── DASHBOARD ──
@@ -777,7 +950,7 @@ function renderDash(){
   document.getElementById('d-avg').textContent=fmt(exp/(days||1));
   document.getElementById('d-topcat').textContent=sorted[0]?sorted[0][0]:'—';
   document.getElementById('d-period-label').textContent=periodLabel(S.period);
-  renderBarChart();renderCatBars(txns);renderUserChart(txns);renderRecent(txns);
+  renderBalances();renderBarChart();renderCatBars(txns);renderUserChart(txns);renderRecent(txns);
 }
 function renderBarChart(){
   const el=document.getElementById('d-chart');const now=new Date();
@@ -850,7 +1023,7 @@ async function refreshAdmin(){
   if(S.session?.role!=='admin')return;
   const cfg=getCfg();document.getElementById('lnk-url').textContent=cfg.scriptUrl?cfg.scriptUrl.slice(0,55)+'...':'Not linked';
   renderUserList();renderBankList();populateObUserSel();populateBankSelects();
-  await fetchOpeningBals();
+  await Promise.all([fetchOpeningBals(), fetchBankAccess()]);
 }
 function renderUserList(){
   const el=document.getElementById('adm-users');
@@ -866,6 +1039,93 @@ function renderOpeningBals(){
   const el=document.getElementById('adm-opening');
   if(!S.openingBals.length){el.innerHTML='<div class="empty"><div class="empty-ico">💰</div><div class="empty-txt">No opening balances set</div></div>';return;}
   el.innerHTML=S.openingBals.map(ob=>{const user=S.users.find(u=>u.id===ob.userId);const bank=ob.bankId?S.banks.find(b=>b.id===ob.bankId):null;return`<div class="uitem"><div class="uitem-info"><div class="uitem-name">${user?user.name:ob.userId} — ${bank?bank.name:'Cash'}</div><div class="uitem-id">As of ${ob.asOfDate}</div></div><div style="font-size:15px;font-weight:700;color:var(--income)">${fmtFull(ob.amount)}</div></div>`;}).join('');
+}
+
+function renderAccessMatrix(){
+  const bankId = document.getElementById('acl-bank-sel').value;
+  const el     = document.getElementById('acl-matrix');
+  if(!bankId){ el.innerHTML=''; return; }
+
+  const bank  = S.banks.find(b=>b.id===bankId);
+  if(!bank){ el.innerHTML=''; return; }
+
+  // Default rights for this bank scope
+  const sharedDefault = bank.scope==='shared';
+
+  if(!S.users.length){ el.innerHTML='<div class="empty"><div class="empty-ico">👤</div><div class="empty-txt">No users</div></div>'; return; }
+
+  // Scope info banner
+  const scopeNote = bank.scope==='shared'
+    ? '<div style="font-size:11px;font-family:\'JetBrains Mono\',monospace;color:var(--text3);margin-bottom:12px;padding:8px 12px;background:var(--surface2);border-radius:var(--r-xs)">SHARED BANK — all users have full access by default. Use toggles to restrict.</div>'
+    : '<div style="font-size:11px;font-family:\'JetBrains Mono\',monospace;color:var(--warn);margin-bottom:12px;padding:8px 12px;background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.2);border-radius:var(--r-xs)">PERSONAL BANK — only owner has access by default. Use toggles to grant access to others.</div>';
+
+  const rows = S.users.map(u => {
+    // Find explicit access row from S.bankAccess (admin gets full matrix)
+    const row    = S.bankAccess.find(a=>a.bankId===bankId && a.userId===u.id);
+    const isOwner= bank.ownerUserId===u.id;
+
+    // Effective rights
+    let canR, canP, isDefault;
+    if(row){ canR=row.canReceive; canP=row.canPay; isDefault=row.isDefault||false; }
+    else if(bank.scope==='shared'){ canR=true; canP=true; isDefault=true; }
+    else { canR=isOwner; canP=isOwner; isDefault=true; }
+
+    const ownerTag = isOwner ? '<span style="font-size:9px;font-family:\'JetBrains Mono\',monospace;color:var(--warn);margin-left:4px">OWNER</span>' : '';
+    const defTag   = isDefault ? '<span class="acl-default-tag">DEFAULT</span>' : '';
+
+    return `<div class="acl-row">
+      <div>
+        <div class="acl-uname">${u.name}${ownerTag}</div>
+        <div class="acl-uinfo">${u.id} ${defTag}</div>
+      </div>
+      <div class="acl-toggles">
+        <div class="acl-toggle">
+          <div class="acl-toggle-lbl r">RECEIVE</div>
+          <button class="tog ${canR?'on':'off'}" id="tog-r-${u.id}"
+            onclick="toggleAccess('${bankId}','${u.id}','receive',this)"></button>
+        </div>
+        <div class="acl-toggle">
+          <div class="acl-toggle-lbl p">PAY</div>
+          <button class="tog ${canP?'pay-on':'off'}" id="tog-p-${u.id}"
+            onclick="toggleAccess('${bankId}','${u.id}','pay',this)"></button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = scopeNote + rows;
+}
+
+async function toggleAccess(bankId, userId, field, btn){
+  // Read current state of BOTH toggles for this user+bank
+  const rBtn = document.getElementById('tog-r-'+userId);
+  const pBtn = document.getElementById('tog-p-'+userId);
+  if(!rBtn||!pBtn) return;
+
+  const curR = rBtn.classList.contains('on');
+  const curP = pBtn.classList.contains('pay-on');
+
+  // Flip the toggled field
+  const newR = field==='receive' ? !curR : curR;
+  const newP = field==='pay'     ? !curP : curP;
+
+  // Optimistic UI update
+  rBtn.className = 'tog ' + (newR ? 'on'    : 'off');
+  pBtn.className = 'tog ' + (newP ? 'pay-on': 'off');
+
+  try{
+    await api('setBankAccess',{bankId, userId, canReceive:newR, canPay:newP});
+    // Refresh local bankAccess data
+    await fetchBankAccess();
+    // Re-render matrix to update DEFAULT tags
+    renderAccessMatrix();
+    toast((field==='receive'?'Receive':'Pay')+' access '+(field==='receive'?newR?'granted ✓':'revoked':newP?'granted ✓':'revoked'),'ok');
+  }catch(e){
+    // Rollback on error
+    rBtn.className = 'tog ' + (curR ? 'on'    : 'off');
+    pBtn.className = 'tog ' + (curP ? 'pay-on': 'off');
+    toast('Error: '+e.message,'er');
+  }
 }
 async function addUser(){
   if(S.session?.role!=='admin'){toast('Admin only','er');return;}
