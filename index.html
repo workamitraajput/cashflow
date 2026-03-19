@@ -110,8 +110,7 @@ textarea{resize:none}input[type=date]{color-scheme:dark}
 .bal-total-card.bank{background:linear-gradient(135deg,rgba(26,127,232,0.09),rgba(26,127,232,0.02));border-color:rgba(26,127,232,0.25)}
 .btc-label{font-size:10px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.5px;color:var(--text2);margin-bottom:7px}
 .btc-amount{font-size:22px;font-weight:800;letter-spacing:-1px;line-height:1}
-.bal-total-card.cash .btc-amount{color:var(--income)}
-.bal-total-card.bank .btc-amount{color:var(--blue-light)}
+.blue-c{color:var(--blue-light)}
 .btc-sub{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-top:5px}
 .bal-user-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}
 .bal-user-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)}
@@ -860,9 +859,13 @@ function renderBalances(){
     });
     const totalBank = Object.values(bankMap).reduce((s,b)=>s+b.total,0);
 
-    // 3. Render totals hero
-    document.getElementById('d-total-cash').textContent = fmtFull(totalCash);
-    document.getElementById('d-total-bank').textContent = fmtFull(totalBank);
+    // 3. Render totals hero — color based on sign
+    const cashEl = document.getElementById('d-total-cash');
+    const bankEl2 = document.getElementById('d-total-bank');
+    cashEl.textContent = fmtFull(totalCash);
+    cashEl.className   = 'btc-amount ' + (totalCash >= 0 ? 'inc-c' : 'exp-c');
+    bankEl2.textContent = fmtFull(totalBank);
+    bankEl2.className   = 'btc-amount ' + (totalBank >= 0 ? 'blue-c' : 'exp-c');
 
     // 4. Render each bank row
     const bankEl = document.getElementById('d-bank-list');
@@ -938,18 +941,41 @@ function renderProfileBal(){
 // ── DASHBOARD ──
 function renderDash(){
   const txns=filterByPeriod(S.txns,S.period);
-  const inc=sum(txns,'income'),exp=sum(txns,'expense'),bal=inc-exp;
-  const days=periodDays(S.period),savings=inc>0?Math.round(bal/inc*100):0;
+  const inc=sum(txns,'income'),exp=sum(txns,'expense'),txnNet=inc-exp;
+  const days=periodDays(S.period),savings=inc>0?Math.round(txnNet/inc*100):0;
   const sorted=Object.entries(groupBy(txns.filter(t=>t.type==='expense'),'minor')).sort((a,b)=>b[1]-a[1]);
-  document.getElementById('d-balance').textContent=fmtFull(Math.abs(bal));
-  document.getElementById('d-balance').className='bh-amount '+(bal>=0?'pos':'neg');
+
+  // Hero card: show REAL total balance (cash + bank) for admin, own balance for others
+  let heroAmt=txnNet, heroLabel='NET (TRANSACTIONS)', heroSub=periodLabel(S.period);
+  if(S.balances.length){
+    const isAdmin=S.session?.role==='admin';
+    if(isAdmin){
+      const totalCash=S.balances.reduce((s,ub)=>s+ub.cashBalance,0);
+      const totalBank=S.balances.reduce((s,ub)=>ub.bankBals.reduce((b,bk)=>b+bk.balance,s),0);
+      heroAmt=totalCash+totalBank;
+      heroLabel='TOTAL REAL BALANCE';
+      heroSub='Cash '+fmtFull(totalCash)+'  +  Bank '+fmtFull(totalBank);
+    }else{
+      const ub=S.balances.find(b=>b.userId===S.session?.userId);
+      if(ub){
+        const myBank=ub.bankBals.reduce((s,b)=>s+b.balance,0);
+        heroAmt=ub.cashBalance+myBank;
+        heroLabel='MY TOTAL BALANCE';
+        heroSub='Cash '+fmtFull(ub.cashBalance)+'  +  Bank '+fmtFull(myBank);
+      }
+    }
+  }
+
+  document.getElementById('d-balance').textContent=fmtFull(Math.abs(heroAmt));
+  document.getElementById('d-balance').className='bh-amount '+(heroAmt>=0?'pos':'neg');
+  document.querySelector('.bh-label').textContent=heroLabel;
+  document.getElementById('d-period-label').textContent=heroSub;
   document.getElementById('d-income').textContent=fmtFull(inc);
   document.getElementById('d-expense').textContent=fmtFull(exp);
   document.getElementById('d-count').textContent=txns.length;
   document.getElementById('d-savings').textContent=savings+'%';
   document.getElementById('d-avg').textContent=fmt(exp/(days||1));
   document.getElementById('d-topcat').textContent=sorted[0]?sorted[0][0]:'—';
-  document.getElementById('d-period-label').textContent=periodLabel(S.period);
   renderBalances();renderBarChart();renderCatBars(txns);renderUserChart(txns);renderRecent(txns);
 }
 function renderBarChart(){
@@ -1217,8 +1243,9 @@ function periodLabel(p){return{today:'Today',week:'This Week',month:'This Month'
 function sum(arr,type){return arr.filter(t=>t.type===type).reduce((s,t)=>s+t.amount,0);}
 function groupBy(arr,key){const r={};arr.forEach(t=>{r[t[key]]=(r[t[key]]||0)+t.amount;});return r;}
 function groupByUser(arr){const r={};arr.forEach(t=>{r[t.userName]=(r[t.userName]||0)+t.amount;});return r;}
-function fmt(n){const a=Math.abs(n);if(a>=1e7)return CUR+(a/1e7).toFixed(1)+'Cr';if(a>=1e5)return CUR+(a/1e5).toFixed(1)+'L';if(a>=1e3)return CUR+(a/1e3).toFixed(1)+'K';return CUR+a.toFixed(0);}
-function fmtFull(n){return CUR+Math.abs(n).toLocaleString('en-IN',{maximumFractionDigits:2});}
+function fmt(n){const a=Math.abs(n);if(a>=1e7)return(n<0?'-':'')+CUR+(a/1e7).toFixed(1)+'Cr';if(a>=1e5)return(n<0?'-':'')+CUR+(a/1e5).toFixed(1)+'L';if(a>=1e3)return(n<0?'-':'')+CUR+(a/1e3).toFixed(1)+'K';return(n<0?'-':'')+CUR+a.toFixed(0);}
+function fmtFull(n){return(n<0?'-':'')+CUR+Math.abs(n).toLocaleString('en-IN',{maximumFractionDigits:2});}
+function fmtAmt(n){return`<span class="${n>=0?'inc-c':'exp-c'}">${fmtFull(n)}</span>`;}// colored amount helper
 function fmtDate(str){if(!str)return'';const d=new Date(str+'T00:00:00');return d.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});}
 function todayStr(){return new Date().toISOString().split('T')[0];}
 </script>
