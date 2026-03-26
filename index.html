@@ -170,7 +170,32 @@ textarea{resize:none}input[type=date]{color-scheme:dark}
 .rb.shared{background:var(--blue-dim);color:var(--blue-light);border:1px solid rgba(26,127,232,.3)}
 .rb.personal{background:rgba(245,166,35,.1);color:var(--warn);border:1px solid rgba(245,166,35,.2)}
 .bflex{display:flex;gap:8px}
-/* BANK ACCESS MATRIX */
+/* CATEGORY ANALYSIS */
+.an-tabs{display:flex;gap:6px}
+.an-tab{flex:1;text-align:center;padding:8px 6px;border-radius:var(--r-xs);font-size:12px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;border:1.5px solid var(--border);background:var(--surface2);color:var(--text3);cursor:pointer;transition:all .18s}
+.an-tab.active{border-color:var(--blue);background:var(--blue-dim);color:var(--blue-light)}
+.an-toggle{display:flex;background:var(--surface2);border-radius:8px;padding:3px;width:fit-content}
+.an-tog-btn{padding:6px 18px;border-radius:6px;font-size:12px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;border:none;background:transparent;color:var(--text3);cursor:pointer;transition:all .18s}
+.an-tog-btn.active{background:var(--surface3);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.an-period-tabs{display:flex;gap:5px}
+.an-pt{padding:6px 12px;border-radius:99px;font-size:11px;font-weight:600;font-family:'JetBrains Mono',monospace;border:1.5px solid var(--border);background:var(--surface2);color:var(--text3);cursor:pointer;transition:all .18s;white-space:nowrap}
+.an-pt.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.an-period-label{font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-bottom:14px;padding:0 2px}
+.an-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+.an-bar-label{font-size:12px;font-weight:600;width:100px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.an-bar-track{flex:1;height:10px;background:var(--surface2);border-radius:99px;overflow:hidden;position:relative}
+.an-bar-fill{height:100%;border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.an-bar-fill.inflow{background:linear-gradient(90deg,#007a4e,var(--income))}
+.an-bar-fill.outflow{background:linear-gradient(90deg,#9e1c35,var(--expense))}
+.an-bar-fill.both-in{background:var(--income)}
+.an-bar-fill.both-out{background:var(--expense)}
+.an-bar-amt{font-size:12px;font-family:'JetBrains Mono',monospace;width:72px;text-align:right;flex-shrink:0;font-weight:600}
+.an-both-track{flex:1;display:flex;flex-direction:column;gap:3px}
+.an-summary-row{display:flex;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.an-sum-item{flex:1;text-align:center}
+.an-sum-label{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.5px;margin-bottom:4px}
+.an-sum-val{font-size:16px;font-weight:800}
+.mb12{margin-bottom:12px}
 .acl-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}.acl-row:last-child{border-bottom:none}
 .acl-uname{flex:1;font-size:13px;font-weight:600}
 .acl-uinfo{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);margin-top:1px}
@@ -265,8 +290,8 @@ textarea{resize:none}input[type=date]{color-scheme:dark}
         <div class="bh-amount" id="d-balance">₹0</div>
         <div class="bh-meta" id="d-period-label"></div>
         <div class="bh-row">
-          <div class="bh-mini"><div class="bh-mini-label"><span class="dot inc"></span>INCOME</div><div class="bh-mini-amt inc-c" id="d-income">₹0</div></div>
-          <div class="bh-mini"><div class="bh-mini-label"><span class="dot exp"></span>EXPENSE</div><div class="bh-mini-amt exp-c" id="d-expense">₹0</div></div>
+          <div class="bh-mini"><div class="bh-mini-label"><span class="dot inc"></span>CASH INFLOW</div><div class="bh-mini-amt inc-c" id="d-income">₹0</div></div>
+          <div class="bh-mini"><div class="bh-mini-label"><span class="dot exp"></span>CASH OUTFLOW</div><div class="bh-mini-amt exp-c" id="d-expense">₹0</div></div>
         </div>
       </div>
       <div class="period-bar">
@@ -310,18 +335,61 @@ textarea{resize:none}input[type=date]{color-scheme:dark}
       </div>
       <div class="chart-card">
         <div class="chart-hdr"><div class="chart-title">7-Day Activity</div>
-          <div class="chart-legend"><div class="chart-leg-item"><span class="dot inc"></span>Income</div><div class="chart-leg-item"><span class="dot exp"></span>Expense</div></div>
+          <div class="chart-legend"><div class="chart-leg-item"><span class="dot inc"></span>Inflow</div><div class="chart-leg-item"><span class="dot exp"></span>Outflow</div></div>
         </div>
         <div class="chart-area" id="d-chart"></div>
       </div>
       <div class="chart-card">
-        <div class="sec-hdr"><div class="chart-title">Top Expenses</div><div class="sec-badge" id="d-cat-lbl"></div></div>
+        <div class="sec-hdr"><div class="chart-title">Top Cash Outflows</div><div class="sec-badge" id="d-cat-lbl"></div></div>
         <div id="d-cat-list"></div>
       </div>
       <div class="chart-card" id="d-user-section" style="display:none">
-        <div class="sec-hdr"><div class="chart-title">Spending by User</div></div>
+        <div class="sec-hdr"><div class="chart-title">Cash Outflow by User</div></div>
         <div id="d-user-list"></div>
       </div>
+
+      <!-- CATEGORY ANALYSIS -->
+      <div class="chart-card" id="d-analysis-card">
+        <div class="sec-hdr" style="margin-bottom:14px">
+          <div class="chart-title">📊 Category Analysis</div>
+          <button class="btn-icon" onclick="openShareReport()" title="Share Report" style="color:var(--blue-light);border-color:var(--blue)">📤</button>
+        </div>
+        <!-- Flow type tabs -->
+        <div class="an-tabs mb12">
+          <div class="an-tab active" id="an-tab-out" onclick="setAnFlow('outflow',this)">Cash Outflow</div>
+          <div class="an-tab" id="an-tab-in" onclick="setAnFlow('inflow',this)">Cash Inflow</div>
+          <div class="an-tab" id="an-tab-all" onclick="setAnFlow('all',this)">Both</div>
+        </div>
+        <!-- Major / Minor toggle -->
+        <div class="an-toggle mb12">
+          <button class="an-tog-btn active" id="an-tog-major" onclick="setAnLevel('major',this)">Major</button>
+          <button class="an-tog-btn" id="an-tog-minor" onclick="setAnLevel('minor',this)">Minor</button>
+        </div>
+        <!-- Period selector -->
+        <div class="an-period-row mb12">
+          <div class="an-period-tabs">
+            <div class="an-pt active" onclick="setAnPeriod('month',this)">Month</div>
+            <div class="an-pt" onclick="setAnPeriod('3month',this)">3M</div>
+            <div class="an-pt" onclick="setAnPeriod('6month',this)">6M</div>
+            <div class="an-pt" onclick="setAnPeriod('year',this)">Year</div>
+            <div class="an-pt" onclick="setAnPeriod('custom',this)">Custom</div>
+          </div>
+        </div>
+        <!-- Custom date range (hidden by default) -->
+        <div id="an-custom-range" style="display:none" class="mb12">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div><label class="fl">FROM</label><input type="date" id="an-from" class="fi" onchange="renderAnalysis()"></div>
+            <div><label class="fl">TO</label><input type="date" id="an-to" class="fi" onchange="renderAnalysis()"></div>
+          </div>
+        </div>
+        <!-- Period label -->
+        <div class="an-period-label" id="an-period-label"></div>
+        <!-- Chart bars -->
+        <div id="an-chart"></div>
+        <!-- Summary totals -->
+        <div id="an-summary" class="an-summary-row"></div>
+      </div>
+
       <div class="card">
         <div class="sec-hdr"><div class="sec-title">RECENT</div><div class="sec-badge" id="d-rec-cnt"></div></div>
         <div id="d-recent"></div>
@@ -331,8 +399,8 @@ textarea{resize:none}input[type=date]{color-scheme:dark}
     <!-- NEW ENTRY -->
     <div class="page" id="pg-entry">
       <div class="type-toggle">
-        <button class="tt-btn active inc" id="btn-inc" onclick="setType('income')">⬆ Income</button>
-        <button class="tt-btn exp" id="btn-exp" onclick="setType('expense')">⬇ Expense</button>
+        <button class="tt-btn active inc" id="btn-inc" onclick="setType('income')">⬆ Cash Inflow</button>
+        <button class="tt-btn exp" id="btn-exp" onclick="setType('expense')">⬇ Cash Outflow</button>
       </div>
       <div class="amt-wrap"><span class="amt-sym">₹</span><input type="number" id="e-amount" class="amt-field" placeholder="0.00" inputmode="decimal"></div>
       <div class="fg"><label class="fl">MAJOR CATEGORY</label><div class="sel-wrap"><select id="e-major" onchange="loadMinors()"><option value="">Select major category</option></select></div></div>
@@ -376,8 +444,8 @@ textarea{resize:none}input[type=date]{color-scheme:dark}
     <div class="page" id="pg-history">
       <div class="filter-row">
         <div class="fc active" onclick="setFilter('all',this)">All</div>
-        <div class="fc" onclick="setFilter('income',this)">Income</div>
-        <div class="fc" onclick="setFilter('expense',this)">Expense</div>
+        <div class="fc" onclick="setFilter('income',this)">Cash Inflow</div>
+        <div class="fc" onclick="setFilter('expense',this)">Cash Outflow</div>
         <div class="fc" onclick="setFilter('transfers',this)">Transfers</div>
         <div class="fc" onclick="setFilter('today',this)">Today</div>
         <div class="fc" onclick="setFilter('week',this)">This Week</div>
@@ -546,10 +614,28 @@ textarea{resize:none}input[type=date]{color-scheme:dark}
     <div class="ni" data-page="profile" onclick="showPage('profile',this)" id="nav-profile" style="display:none"><div class="ni-icon">👤</div><div class="ni-lbl">Profile</div></div>
   </div>
 </div>
+  <!-- SHARE REPORT MODAL -->
+  <div class="mo" id="mo-share" onclick="closeModal('mo-share')">
+    <div class="mo-box" onclick="event.stopPropagation()" style="max-height:92vh">
+      <div class="mo-handle"></div>
+      <div class="mo-title">📤 Share Report</div>
+      <div class="mo-sub" id="sh-subtitle">Category Analysis</div>
+      <!-- Preview -->
+      <div id="sh-preview" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;margin-bottom:16px;max-height:50vh;overflow-y:auto;font-size:13px;font-family:'JetBrains Mono',monospace;white-space:pre-wrap;line-height:1.7;color:var(--text)"></div>
+      <!-- Share options -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <button class="btn btn-primary" onclick="shareViaNavigator()">📱 Share</button>
+        <button class="btn btn-secondary" onclick="copyReport()">📋 Copy Text</button>
+      </div>
+      <button class="btn btn-ghost mt8" onclick="closeModal('mo-share')">Close</button>
+    </div>
+  </div>
+
 <div class="toast" id="toast"></div>
 <script>
 const CFG_KEY='cf_cfg',SESS_KEY='cf_sess',CUR='₹';
-const S={url:'',session:null,txns:[],transfers:[],cats:{},users:[],banks:[],balances:[],openingBals:[],bankAccess:[],period:'month',filter:'all',entryType:'income',payMode:'cash',trType:'cash_to_user'};
+const S={url:'',session:null,txns:[],transfers:[],cats:{},users:[],banks:[],balances:[],openingBals:[],bankAccess:[],period:'month',filter:'all',entryType:'income',payMode:'cash',trType:'cash_to_user',
+  an:{flow:'outflow',level:'major',period:'month',from:'',to:''}};
 
 // ── BOOT ──
 window.onload=()=>{
@@ -640,6 +726,10 @@ async function bootApp(){
   document.getElementById('profile-info').textContent=s.userName+' · '+s.role.toUpperCase();
   document.getElementById('tb-sub').textContent=(new Date().getHours()<12?'Good morning':new Date().getHours()<17?'Good afternoon':'Good evening')+', '+s.userName;
   ['e-date','tr-date','ob-date'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=todayStr();});
+  // Set analysis custom range defaults to current month
+  const anFrom=document.getElementById('an-from'),anTo=document.getElementById('an-to');
+  if(anFrom){const d=new Date();anFrom.value=new Date(d.getFullYear(),d.getMonth(),1).toISOString().split('T')[0];}
+  if(anTo){anTo.value=todayStr();}
   await Promise.all([fetchCategories(),fetchBanks(),fetchTransactions(),fetchTransfers(),fetchBalances(),fetchUsers(),fetchBankAccess()]);
   renderDash();if(isAdmin)refreshAdmin();
 }
@@ -976,8 +1066,110 @@ function renderDash(){
   document.getElementById('d-savings').textContent=savings+'%';
   document.getElementById('d-avg').textContent=fmt(exp/(days||1));
   document.getElementById('d-topcat').textContent=sorted[0]?sorted[0][0]:'—';
-  renderBalances();renderBarChart();renderCatBars(txns);renderUserChart(txns);renderRecent(txns);
+  renderBalances();renderBarChart();renderCatBars(txns);renderUserChart(txns);renderRecent(txns);renderAnalysis();
 }
+// ── CATEGORY ANALYSIS ──
+function setAnFlow(f,el){S.an.flow=f;document.querySelectorAll('.an-tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');renderAnalysis();}
+function setAnLevel(l,el){S.an.level=l;document.querySelectorAll('.an-tog-btn').forEach(x=>x.classList.remove('active'));el.classList.add('active');renderAnalysis();}
+function setAnPeriod(p,el){
+  S.an.period=p;
+  document.querySelectorAll('.an-pt').forEach(x=>x.classList.remove('active'));el.classList.add('active');
+  const cr=document.getElementById('an-custom-range');
+  if(cr) cr.style.display=p==='custom'?'block':'none';
+  if(p!=='custom') renderAnalysis();
+}
+function anPeriodTxns(){
+  const now=new Date();now.setHours(23,59,59,999);
+  let from=new Date(0),to=now,label='';
+  const p=S.an.period;
+  if(p==='month'){from=new Date(now.getFullYear(),now.getMonth(),1);label='This Month';}
+  else if(p==='3month'){from=new Date(now.getFullYear(),now.getMonth()-2,1);label='Last 3 Months';}
+  else if(p==='6month'){from=new Date(now.getFullYear(),now.getMonth()-5,1);label='Last 6 Months';}
+  else if(p==='year'){from=new Date(now.getFullYear(),0,1);label='This Year';}
+  else if(p==='custom'){
+    const f=document.getElementById('an-from')?.value;
+    const t=document.getElementById('an-to')?.value;
+    if(!f||!t){document.getElementById('an-period-label').textContent='Select date range above';return{txns:[],label:''};}
+    from=new Date(f+'T00:00:00');to=new Date(t+'T23:59:59');
+    label=fmtDateShort(f)+' → '+fmtDateShort(t);
+  }
+  const txns=S.txns.filter(t=>{const d=new Date(t.date+'T00:00:00');return d>=from&&d<=to;});
+  return{txns,label};
+}
+function fmtDateShort(str){if(!str)return'';const d=new Date(str+'T00:00:00');return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit'});}
+function renderAnalysis(){
+  const {txns,label}=anPeriodTxns();
+  const labelEl=document.getElementById('an-period-label');
+  const chartEl=document.getElementById('an-chart');
+  const sumEl=document.getElementById('an-summary');
+  if(!txns&&!txns?.length&&label===''){return;}
+  if(labelEl) labelEl.textContent=label;
+
+  const flow=S.an.flow, level=S.an.level;
+  const key=level==='major'?'major':'minor';
+
+  // Filter by flow type
+  const inTxns =txns.filter(t=>t.type==='income');
+  const outTxns=txns.filter(t=>t.type==='expense');
+  const totalIn =inTxns.reduce((s,t)=>s+t.amount,0);
+  const totalOut=outTxns.reduce((s,t)=>s+t.amount,0);
+
+  // Group by category key
+  const groupTxns=(arr)=>{
+    const m={};arr.forEach(t=>{const k=t[key]||'Other';m[k]=(m[k]||0)+t.amount;});
+    return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+  };
+
+  const inGroups =groupTxns(inTxns);
+  const outGroups=groupTxns(outTxns);
+
+  let html='';
+  if(flow==='outflow'){
+    const maxV=outGroups[0]?.[1]||1;
+    if(!outGroups.length){html='<div class="empty"><div class="empty-ico">📂</div><div class="empty-txt">No outflow data</div></div>';}
+    else html=outGroups.map(([cat,amt])=>`
+      <div class="an-bar-row">
+        <div class="an-bar-label" title="${cat}">${cat}</div>
+        <div class="an-bar-track"><div class="an-bar-fill outflow" style="width:${(amt/maxV*100).toFixed(1)}%"></div></div>
+        <div class="an-bar-amt exp-c">${fmtFull(amt)}</div>
+      </div>`).join('');
+  } else if(flow==='inflow'){
+    const maxV=inGroups[0]?.[1]||1;
+    if(!inGroups.length){html='<div class="empty"><div class="empty-ico">📂</div><div class="empty-txt">No inflow data</div></div>';}
+    else html=inGroups.map(([cat,amt])=>`
+      <div class="an-bar-row">
+        <div class="an-bar-label" title="${cat}">${cat}</div>
+        <div class="an-bar-track"><div class="an-bar-fill inflow" style="width:${(amt/maxV*100).toFixed(1)}%"></div></div>
+        <div class="an-bar-amt inc-c">${fmtFull(amt)}</div>
+      </div>`).join('');
+  } else {
+    // Both — merge all categories, show two sub-bars per category
+    const allCats=[...new Set([...inGroups.map(x=>x[0]),...outGroups.map(x=>x[0])])];
+    const inMap=Object.fromEntries(inGroups), outMap=Object.fromEntries(outGroups);
+    const maxV=Math.max(...allCats.map(c=>Math.max(inMap[c]||0,outMap[c]||0)),1);
+    if(!allCats.length){html='<div class="empty"><div class="empty-ico">📂</div><div class="empty-txt">No data</div></div>';}
+    else html=allCats.map(cat=>{
+      const iAmt=inMap[cat]||0, oAmt=outMap[cat]||0;
+      return`<div class="an-bar-row" style="align-items:flex-start">
+        <div class="an-bar-label" style="padding-top:3px" title="${cat}">${cat}</div>
+        <div class="an-both-track">
+          ${iAmt?`<div style="display:flex;align-items:center;gap:6px"><div class="an-bar-track" style="height:8px"><div class="an-bar-fill both-in" style="width:${(iAmt/maxV*100).toFixed(1)}%"></div></div><div class="an-bar-amt inc-c" style="font-size:11px">${fmtFull(iAmt)}</div></div>`:''}
+          ${oAmt?`<div style="display:flex;align-items:center;gap:6px"><div class="an-bar-track" style="height:8px"><div class="an-bar-fill both-out" style="width:${(oAmt/maxV*100).toFixed(1)}%"></div></div><div class="an-bar-amt exp-c" style="font-size:11px">${fmtFull(oAmt)}</div></div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  if(chartEl) chartEl.innerHTML=html;
+
+  // Summary totals row
+  const net=totalIn-totalOut;
+  if(sumEl) sumEl.innerHTML=`
+    <div class="an-sum-item"><div class="an-sum-label">TOTAL INFLOW</div><div class="an-sum-val inc-c">${fmtFull(totalIn)}</div></div>
+    <div class="an-sum-item"><div class="an-sum-label">TOTAL OUTFLOW</div><div class="an-sum-val exp-c">${fmtFull(totalOut)}</div></div>
+    <div class="an-sum-item"><div class="an-sum-label">NET</div><div class="an-sum-val ${net>=0?'inc-c':'exp-c'}">${fmtFull(net)}</div></div>`;
+}
+
 function renderBarChart(){
   const el=document.getElementById('d-chart');const now=new Date();
   const incs=[],exps=[],lbls=[];
@@ -990,7 +1182,7 @@ function renderCatBars(txns){
   const sorted=Object.entries(groupBy(txns.filter(t=>t.type==='expense'),'minor')).sort((a,b)=>b[1]-a[1]).slice(0,6);
   const maxV=sorted[0]?.[1]||1,cols=['#1a7fe8','#00c6ff','#00d084','#f5a623','#f0506e','#9b59b6'];
   document.getElementById('d-cat-lbl').textContent=periodLabel(S.period);
-  if(!sorted.length){el.innerHTML='<div class="empty"><div class="empty-ico">📂</div><div class="empty-txt">No expense data</div></div>';return;}
+  if(!sorted.length){el.innerHTML='<div class="empty"><div class="empty-ico">📂</div><div class="empty-txt">No outflow data</div></div>';return;}
   el.innerHTML=sorted.map(([cat,amt],i)=>`<div class="cat-item"><div class="cat-row"><span class="cat-name">${cat}</span><span style="color:var(--expense);font-weight:700;font-size:12px">${fmtFull(amt)}</span></div><div class="cat-track"><div class="cat-fill" style="width:${(amt/maxV*100).toFixed(1)}%;background:${cols[i%cols.length]}"></div></div></div>`).join('');
 }
 function renderUserChart(txns){
@@ -1227,7 +1419,136 @@ async function submitResetPin(){
   btn.innerHTML='Reset PIN';btn.disabled=false;
 }
 
-// ── MODAL + TOAST ──
+// ── SHARE REPORT ──
+function openShareReport(){
+  const text = buildReportText();
+  document.getElementById('sh-preview').textContent = text;
+  document.getElementById('sh-subtitle').textContent = getReportTitle();
+  openModal('mo-share');
+}
+
+function getReportTitle(){
+  const flowMap={outflow:'Cash Outflow',inflow:'Cash Inflow',all:'Inflow & Outflow'};
+  const levelMap={major:'by Major Category',minor:'by Minor Category'};
+  const {label} = anPeriodTxns();
+  return `${flowMap[S.an.flow]} ${levelMap[S.an.level]} — ${label}`;
+}
+
+function buildReportText(){
+  const {txns, label} = anPeriodTxns();
+  if(!txns || !label) return 'No data available.';
+
+  const flow  = S.an.flow;
+  const level = S.an.level;
+  const key   = level === 'major' ? 'major' : 'minor';
+  const appName = 'CashFlow Manager';
+  const now = new Date().toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+  const inTxns  = txns.filter(t => t.type === 'income');
+  const outTxns = txns.filter(t => t.type === 'expense');
+  const totalIn  = inTxns.reduce((s,t)  => s + t.amount, 0);
+  const totalOut = outTxns.reduce((s,t) => s + t.amount, 0);
+  const net = totalIn - totalOut;
+
+  const groupTxns = arr => {
+    const m = {};
+    arr.forEach(t => { const k = t[key]||'Other'; m[k] = (m[k]||0) + t.amount; });
+    return Object.entries(m).sort((a,b) => b[1] - a[1]);
+  };
+
+  const bar = (pct) => {
+    const filled = Math.round(pct / 5);
+    return '█'.repeat(filled) + '░'.repeat(20 - filled);
+  };
+
+  let lines = [];
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push(`  ${appName}`);
+  lines.push(`  Category Analysis Report`);
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push(`  Period  : ${label}`);
+  lines.push(`  View    : ${flow === 'all' ? 'Inflow & Outflow' : flow === 'inflow' ? 'Cash Inflow' : 'Cash Outflow'}`);
+  lines.push(`  Level   : ${level === 'major' ? 'Major Categories' : 'Minor Categories'}`);
+  lines.push(`  Generated: ${now}`);
+  lines.push('');
+
+  if(flow === 'outflow' || flow === 'all'){
+    const groups = groupTxns(outTxns);
+    const maxV = groups[0]?.[1] || 1;
+    lines.push('  ── CASH OUTFLOW ──────────────');
+    if(!groups.length){ lines.push('  No outflow data'); }
+    else {
+      groups.forEach(([cat, amt]) => {
+        const pct = amt / maxV * 100;
+        const padded = cat.padEnd(18).slice(0,18);
+        lines.push(`  ${padded} ${bar(pct)}  ${fmtFull(amt)}`);
+      });
+    }
+    lines.push(`${''.padEnd(32,'─')}`);
+    lines.push(`  ${'TOTAL OUTFLOW'.padEnd(18)} ${fmtFull(totalOut)}`);
+    lines.push('');
+  }
+
+  if(flow === 'inflow' || flow === 'all'){
+    const groups = groupTxns(inTxns);
+    const maxV = groups[0]?.[1] || 1;
+    lines.push('  ── CASH INFLOW ───────────────');
+    if(!groups.length){ lines.push('  No inflow data'); }
+    else {
+      groups.forEach(([cat, amt]) => {
+        const pct = amt / maxV * 100;
+        const padded = cat.padEnd(18).slice(0,18);
+        lines.push(`  ${padded} ${bar(pct)}  ${fmtFull(amt)}`);
+      });
+    }
+    lines.push(`${''.padEnd(32,'─')}`);
+    lines.push(`  ${'TOTAL INFLOW'.padEnd(18)} ${fmtFull(totalIn)}`);
+    lines.push('');
+  }
+
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push(`  Total Inflow  : ${fmtFull(totalIn)}`);
+  lines.push(`  Total Outflow : ${fmtFull(totalOut)}`);
+  lines.push(`  Net Balance   : ${net >= 0 ? '+' : ''}${fmtFull(net)}`);
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+  return lines.join('\n');
+}
+
+async function shareViaNavigator(){
+  const text  = buildReportText();
+  const title = getReportTitle();
+  if(navigator.share){
+    try{
+      await navigator.share({ title, text });
+      toast('Shared ✓','ok');
+    } catch(e){
+      if(e.name !== 'AbortError') toast('Share failed','er');
+    }
+  } else {
+    // Fallback: WhatsApp deep link
+    const encoded = encodeURIComponent(text);
+    window.open('https://wa.me/?text=' + encoded, '_blank');
+  }
+}
+
+async function copyReport(){
+  const text = buildReportText();
+  try{
+    await navigator.clipboard.writeText(text);
+    toast('Copied to clipboard ✓','ok');
+  } catch(e){
+    // Fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast('Copied ✓','ok');
+  }
+}
+
+
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function toast(msg,type=''){const el=document.getElementById('toast');const icon=type==='ok'?'✓ ':type==='er'?'✗ ':'ℹ ';el.textContent=icon+msg;el.className='toast show '+type;clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2800);}
